@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roofing ROI Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Added jsPDF library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Changed from Inter to Oswald (Industrial) and Roboto (Standard) */
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        h1, h2, h3, h4, .stat-value {
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        /* Rugged Slider Design */
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #c2410c; /* Darker Orange */
+            cursor: pointer;
+            border: 2px solid #fff;
+            border-radius: 4px; /* Squared off */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-zinc-100 text-zinc-900 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-zinc-900 text-white py-6 border-b-4 border-orange-600">
+        <div class="container mx-auto px-4 max-w-5xl flex flex-col md:flex-row items-center justify-between">
+            <div class="text-center md:text-left">
+                <h1 class="text-3xl font-bold uppercase tracking-wide">
+                    <i class="fa-solid fa-helmet-safety text-orange-600 mr-2"></i> Roofer Revenue Recovery
+                </h1>
+                <p class="text-zinc-400 text-sm mt-1">Missed Call Cost Calculator</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <span class="bg-zinc-800 text-xs px-3 py-1 rounded-sm border border-zinc-700 uppercase tracking-widest text-zinc-400">ROI Tool v1.0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Calculator Section -->
+    <main class="flex-grow container mx-auto px-4 max-w-5xl py-8 md:py-12">
+        
+        <div class="grid md:grid-cols-12 gap-6 items-start">
+            
+            <!-- Input Panel -->
+            <div class="md:col-span-7 bg-white p-6 md:p-8 shadow-sm border border-zinc-300">
+                <h2 class="text-2xl font-bold mb-6 text-zinc-900 border-b-2 border-zinc-100 pb-2 uppercase">Input Your Numbers</h2>
+                
+                <!-- Input 1: Average Job Value -->
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-zinc-600 uppercase mb-2">Average Job Value</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-zinc-500 font-bold">$</span>
+                        </div>
+                        <input type="number" id="jobValue" value="12000" class="pl-8 w-full p-3 bg-zinc-50 border-2 border-zinc-300 focus:border-orange-600 focus:ring-0 transition outline-none font-bold text-lg text-zinc-800 rounded-sm placeholder-zinc-400" placeholder="12000">
+                    </div>
+                </div>
+
+                <!-- Input 2: Missed Calls/Leads -->
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-zinc-600 uppercase mb-2">Missed Calls Per Month</label>
+                    <div class="flex items-center gap-4 bg-zinc-50 p-4 border border-zinc-200 rounded-sm">
+                        <input type="range" id="missedCallsRange" min="0" max="50" value="5" class="w-full h-3 bg-zinc-300 rounded-sm appearance-none cursor-pointer slider-thumb">
+                        <input type="number" id="missedCallsInput" value="5" class="w-20 p-2 border-2 border-zinc-300 text-center font-bold text-lg text-zinc-800 focus:border-orange-600 outline-none rounded-sm">
+                    </div>
+                </div>
+
+                <!-- Input 3: Close Rate -->
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-zinc-600 uppercase mb-2">Close Rate</label>
+                    <div class="flex items-center gap-4 bg-zinc-50 p-4 border border-zinc-200 rounded-sm">
+                        <input type="range" id="closeRateRange" min="0" max="100" value="30" class="w-full h-3 bg-zinc-300 rounded-sm appearance-none cursor-pointer slider-thumb">
+                        <div class="relative w-20">
+                            <input type="number" id="closeRateInput" value="30" class="w-full p-2 border-2 border-zinc-300 text-center font-bold text-lg text-zinc-800 focus:border-orange-600 outline-none rounded-sm">
+                        </div>
+                        <span class="text-zinc-500 font-bold">%</span>
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-2 font-medium">Industry Average: 20-40%</p>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="md:col-span-5 bg-zinc-900 text-white p-6 md:p-8 shadow-lg border-t-8 border-orange-600 flex flex-col justify-between h-full">
+                
+                <div>
+                    <h2 class="text-xl font-bold mb-8 text-white border-b border-zinc-700 pb-2 uppercase tracking-wide">Estimated Losses</h2>
+
+                    <div class="space-y-8">
+                        <div>
+                            <p class="text-zinc-400 text-xs uppercase tracking-widest font-bold mb-1">Monthly Revenue Lost</p>
+                            <div class="text-5xl font-bold text-white stat-value" id="monthlyLost">$0</div>
+                        </div>
+
+                        <div>
+                            <p class="text-zinc-400 text-xs uppercase tracking-widest font-bold mb-1">Yearly Revenue Lost</p>
+                            <div class="text-4xl font-bold text-orange-500 stat-value" id="yearlyLost">$0</div>
+                            <div class="mt-2 inline-block bg-zinc-800 px-3 py-1 rounded-sm border border-zinc-700">
+                                <p class="text-xs text-zinc-300 font-medium">
+                                    <i class="fa-solid fa-truck-pickup text-orange-500 mr-1"></i>
+                                    ~<span id="truckCount">0</span> new trucks / year
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-zinc-800 border-dashed">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-calculator text-orange-500 mt-1"></i>
+                        <p class="text-sm text-zinc-300 leading-relaxed font-light">
+                            Recovering just <strong class="text-white" id="savedLeads">0</strong> calls could add <strong class="text-white" id="addedRevenue">$0</strong> this month.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CTA Section (Value & Awareness Focus) -->
+        <div class="mt-8 bg-white border border-zinc-300 shadow-sm">
+            <div class="grid md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-zinc-200">
+                <!-- Educational Side (Context) -->
+                <div class="p-6 md:p-8 md:col-span-3 bg-zinc-50">
+                    <h3 class="text-xl font-bold text-zinc-900 mb-6 uppercase">Why Speed Matters</h3>
+                    
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <!-- Stat 1 -->
+                        <div class="bg-white p-4 border border-zinc-200 shadow-sm border-l-4 border-l-orange-600">
+                            <h4 class="font-bold text-zinc-900 text-sm uppercase mb-2">The 5-Minute Rule</h4>
+                            <p class="text-sm text-zinc-600 leading-snug">
+                                Responding in < 5 mins makes you <strong>21x more likely</strong> to qualify a lead vs waiting 30 mins.
+                            </p>
+                        </div>
+
+                        <!-- Stat 2 -->
+                        <div class="bg-white p-4 border border-zinc-200 shadow-sm border-l-4 border-l-zinc-800">
+                            <h4 class="font-bold text-zinc-900 text-sm uppercase mb-2">Close Rate Impact</h4>
+                            <p class="text-sm text-zinc-600 leading-snug">
+                                Missed calls have <strong>0% close rate</strong>. Text-back can restore this to the standard <strong>20-30%</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Side -->
+                <div class="p-8 md:col-span-2 flex flex-col justify-center items-center text-center bg-white">
+                    <h4 class="font-bold text-zinc-900 mb-2 text-lg uppercase">Fix Your Reach Rate</h4>
+                    <p class="text-sm text-zinc-500 mb-6">Get the "Missed Call Text-Back" setup guide.</p>
+                    
+                    <button id="downloadBtn" onclick="downloadPDF()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-4 px-6 shadow-md transition-colors flex justify-center items-center gap-3 uppercase tracking-wide text-sm rounded-sm">
+                        <i class="fa-regular fa-file-pdf text-lg"></i>
+                        <span>Download Checklist</span>
+                    </button>
+                    <p class="text-xs text-zinc-400 mt-3 font-medium">Free PDF. Instant Access.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-zinc-800 py-8 border-t border-zinc-700 mt-auto">
+        <div class="container mx-auto px-4 text-center text-zinc-500 text-sm font-medium">
+            &copy; <script>document.write(new Date().getFullYear())</script> Roofing Growth Systems.
+        </div>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const jobValueInput = document.getElementById('jobValue');
+        const missedCallsRange = document.getElementById('missedCallsRange');
+        const missedCallsInput = document.getElementById('missedCallsInput');
+        const closeRateRange = document.getElementById('closeRateRange');
+        const closeRateInput = document.getElementById('closeRateInput');
+        
+        const monthlyLostDisplay = document.getElementById('monthlyLost');
+        const yearlyLostDisplay = document.getElementById('yearlyLost');
+        const truckCountDisplay = document.getElementById('truckCount');
+        const savedLeadsDisplay = document.getElementById('savedLeads');
+        const addedRevenueDisplay = document.getElementById('addedRevenue');
+
+        // Sync Range and Number Inputs
+        function syncInputs(range, number) {
+            range.addEventListener('input', () => {
+                number.value = range.value;
+                calculate();
+            });
+            number.addEventListener('input', () => {
+                // simple validation
+                let val = parseInt(number.value) || 0;
+                if(val > parseInt(range.max)) val = parseInt(range.max);
+                if(val < parseInt(range.min)) val = parseInt(range.min);
+                
+                range.value = val;
+                calculate();
+            });
+        }
+
+        syncInputs(missedCallsRange, missedCallsInput);
+        syncInputs(closeRateRange, closeRateInput);
+        jobValueInput.addEventListener('input', calculate);
+
+        // Formatter for Currency
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0
+        });
+
+        function calculate() {
+            // Get values
+            const jobValue = parseFloat(jobValueInput.value) || 0;
+            const missedCalls = parseFloat(missedCallsInput.value) || 0;
+            const closeRate = parseFloat(closeRateInput.value) || 0;
+
+            // Logic
+            // Revenue lost = Missed Calls * (Close Rate %) * Job Value
+            const monthlyLost = missedCalls * (closeRate / 100) * jobValue;
+            const yearlyLost = monthlyLost * 12;
+
+            // For the insight box
+            // Assume "saving" means catching just 50% of those missed calls (conservative estimate)
+            const savedCallCount = Math.max(1, Math.round(missedCalls * 0.5)); 
+            const potentialAddedRevenue = savedCallCount * (closeRate / 100) * jobValue;
+
+            // Fun metric: New Trucks (Assuming a work truck costs ~$50k)
+            const truckCost = 50000;
+            const trucksLost = (yearlyLost / truckCost).toFixed(1);
+
+            // Update DOM
+            monthlyLostDisplay.textContent = formatter.format(monthlyLost);
+            yearlyLostDisplay.textContent = formatter.format(yearlyLost);
+            truckCountDisplay.textContent = trucksLost;
+            
+            savedLeadsDisplay.textContent = savedCallCount + (savedCallCount === 1 ? " call" : " calls");
+            addedRevenueDisplay.textContent = formatter.format(potentialAddedRevenue);
+        }
+
+        // PDF Generation Logic
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Colors
+            const orange = '#c2410c';
+            const dark = '#18181b';
+
+            // Title
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(orange);
+            doc.text("5 STEPS TO RESPOND TO EVERY LEAD", 20, 25);
+            
+            // Subtitle
+            doc.setFontSize(11);
+            doc.setTextColor(dark);
+            doc.text("A quick-start checklist to stop leaking leads and win more roofs.", 20, 35);
+            doc.setLineWidth(0.5);
+            doc.line(20, 40, 190, 40);
+
+            // Checklist Items
+            let y = 55;
+            
+            const items = [
+                { 
+                    title: "1. CENTRALIZE EVERY LEAD SOURCE", 
+                    desc: "List sources: Phone, Missed Calls, Website Forms, Ads, GMB.\n'One Inbox' Rule: All leads must land in a single place (CRM) within minutes." 
+                },
+                { 
+                    title: "2. SET UP INSTANT AUTO-REPLY", 
+                    desc: "Confirm receipt immediately via SMS/Email.\nScript: 'Thanks for reaching out. We've got your request. We'll reply in a few minutes.'" 
+                },
+                { 
+                    title: "3. ALERT THE RIGHT PERSON", 
+                    desc: "Ensure owner/sales rep gets a ping (SMS/App) instantly.\n5-Minute Rule: Whoever is 'on lead duty' must call back within 5-10 minutes." 
+                },
+                { 
+                    title: "4. EASY BOOKING OPTIONS", 
+                    desc: "Add a clear CTA to auto-replies (e.g., 'Pick a time for a free inspection: [Link]').\nSync Calendar: Connect to Google Cal/Calendly with pre-set windows." 
+                },
+                { 
+                    title: "5. TRACK UNTIL 'YES' OR 'NO'", 
+                    desc: "Pipeline: New > Contacted > Inspection Set > Won/Lost.\nFollow-Up: At least 3-5 follow-ups over a week before marking as lost." 
+                }
+            ];
+
+            items.forEach(item => {
+                // Title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.setTextColor(orange);
+                doc.text(item.title, 20, y);
+                y += 6;
+
+                // Description (Multi-line handling)
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor(dark);
+                // splitTextToSize ensures text wraps within 170mm width
+                const splitDesc = doc.splitTextToSize(item.desc, 170);
+                doc.text(splitDesc, 20, y);
+                
+                // Calculate next Y position based on how many lines the description took
+                y += (splitDesc.length * 5) + 8;
+            });
+
+            // Footer Section
+            y = 260; // Force footer to bottom
+            doc.setDrawColor(200);
+            doc.line(20, y, 190, y);
+            
+            y += 10;
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.setTextColor(dark);
+            doc.text("Market Glide Solutions - Sergio Lemley", 20, y);
+            
+            y += 5;
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100);
+            doc.text("Need this system built for you? We set up missed-call text-back in under 2 weeks.", 20, y);
+
+            // Save
+            doc.save("Roofer_Lead_Checklist.pdf");
+        }
+
+        // Initial Calculation
+        calculate();
+
+    </script>
+</body>
+</html>
