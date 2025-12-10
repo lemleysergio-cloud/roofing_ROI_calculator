@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roofing ROI Calculator</title>
+    <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Added jsPDF library for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- FontAwesome for Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Changed from Inter to Oswald (Industrial) and Roboto (Standard) */
+        /* Typography: Oswald for Headings, Roboto for Body */
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
         
         body {
@@ -21,23 +21,23 @@
             letter-spacing: 0.5px;
         }
 
-        /* Rugged Slider Design */
+        /* Custom Slider Styling */
         .slider-thumb::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 24px;
             height: 24px;
-            background: #c2410c; /* Darker Orange */
+            background: #c2410c; /* Dark Orange */
             cursor: pointer;
             border: 2px solid #fff;
-            border-radius: 4px; /* Squared off */
+            border-radius: 4px; /* Square/Industrial look */
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body class="bg-zinc-100 text-zinc-900 min-h-screen flex flex-col">
 
-    <!-- Header -->
+    <!-- Header Section -->
     <header class="bg-zinc-900 text-white py-6 border-b-4 border-orange-600">
         <div class="container mx-auto px-4 max-w-5xl flex flex-col md:flex-row items-center justify-between">
             <div class="text-center md:text-left">
@@ -52,12 +52,12 @@
         </div>
     </header>
 
-    <!-- Main Calculator Section -->
+    <!-- Main Calculator Area -->
     <main class="flex-grow container mx-auto px-4 max-w-5xl py-8 md:py-12">
         
         <div class="grid md:grid-cols-12 gap-6 items-start">
             
-            <!-- Input Panel -->
+            <!-- Left Side: Inputs -->
             <div class="md:col-span-7 bg-white p-6 md:p-8 shadow-sm border border-zinc-300">
                 <h2 class="text-2xl font-bold mb-6 text-zinc-900 border-b-2 border-zinc-100 pb-2 uppercase">Input Your Numbers</h2>
                 
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <!-- Results Panel -->
+            <!-- Right Side: Results -->
             <div class="md:col-span-5 bg-zinc-900 text-white p-6 md:p-8 shadow-lg border-t-8 border-orange-600 flex flex-col justify-between h-full">
                 
                 <div>
@@ -132,10 +132,11 @@
 
         </div>
 
-        <!-- CTA Section (Value & Awareness Focus) -->
+        <!-- Download Section / Lead Magnet -->
         <div class="mt-8 bg-white border border-zinc-300 shadow-sm">
             <div class="grid md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-zinc-200">
-                <!-- Educational Side (Context) -->
+                
+                <!-- Educational Context -->
                 <div class="p-6 md:p-8 md:col-span-3 bg-zinc-50">
                     <h3 class="text-xl font-bold text-zinc-900 mb-6 uppercase">Why Speed Matters</h3>
                     
@@ -158,15 +159,17 @@
                     </div>
                 </div>
 
-                <!-- CTA Side -->
+                <!-- Download Button Area -->
                 <div class="p-8 md:col-span-2 flex flex-col justify-center items-center text-center bg-white">
                     <h4 class="font-bold text-zinc-900 mb-2 text-lg uppercase">Fix Your Reach Rate</h4>
                     <p class="text-sm text-zinc-500 mb-6">Get the "Missed Call Text-Back" setup guide.</p>
                     
-                    <button id="downloadBtn" onclick="downloadPDF()" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-4 px-6 shadow-md transition-colors flex justify-center items-center gap-3 uppercase tracking-wide text-sm rounded-sm">
-                        <i class="fa-regular fa-file-pdf text-lg"></i>
+                    <!-- UPDATED: Direct Download Link -->
+                    <!-- This looks for a file named "checklist.pdf" in the same folder -->
+                    <a href="checklist.pdf" download="Roofing_Lead_Checklist.pdf" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold py-4 px-6 shadow-md transition-colors flex justify-center items-center gap-3 uppercase tracking-wide text-sm rounded-sm cursor-pointer group no-underline">
+                        <i class="fa-regular fa-file-pdf text-lg group-hover:scale-110 transition-transform"></i>
                         <span>Download Checklist</span>
-                    </button>
+                    </a>
                     <p class="text-xs text-zinc-400 mt-3 font-medium">Free PDF. Instant Access.</p>
                 </div>
             </div>
@@ -174,14 +177,17 @@
 
     </main>
 
+    <!-- Footer -->
     <footer class="bg-zinc-800 py-8 border-t border-zinc-700 mt-auto">
         <div class="container mx-auto px-4 text-center text-zinc-500 text-sm font-medium">
             &copy; <script>document.write(new Date().getFullYear())</script> Roofing Growth Systems.
         </div>
     </footer>
 
+    <!-- Logic Script -->
     <script>
-        // DOM Elements
+        // --- Calculator Logic Only (PDF Generation Removed) ---
+        
         const jobValueInput = document.getElementById('jobValue');
         const missedCallsRange = document.getElementById('missedCallsRange');
         const missedCallsInput = document.getElementById('missedCallsInput');
@@ -194,18 +200,16 @@
         const savedLeadsDisplay = document.getElementById('savedLeads');
         const addedRevenueDisplay = document.getElementById('addedRevenue');
 
-        // Sync Range and Number Inputs
+        // Helper to sync slider and text input
         function syncInputs(range, number) {
             range.addEventListener('input', () => {
                 number.value = range.value;
                 calculate();
             });
             number.addEventListener('input', () => {
-                // simple validation
                 let val = parseInt(number.value) || 0;
                 if(val > parseInt(range.max)) val = parseInt(range.max);
                 if(val < parseInt(range.min)) val = parseInt(range.min);
-                
                 range.value = val;
                 calculate();
             });
@@ -215,7 +219,7 @@
         syncInputs(closeRateRange, closeRateInput);
         jobValueInput.addEventListener('input', calculate);
 
-        // Formatter for Currency
+        // Currency Formatter
         const formatter = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
@@ -223,26 +227,25 @@
         });
 
         function calculate() {
-            // Get values
+            // Retrieve values
             const jobValue = parseFloat(jobValueInput.value) || 0;
             const missedCalls = parseFloat(missedCallsInput.value) || 0;
             const closeRate = parseFloat(closeRateInput.value) || 0;
 
-            // Logic
+            // Calculations
             // Revenue lost = Missed Calls * (Close Rate %) * Job Value
             const monthlyLost = missedCalls * (closeRate / 100) * jobValue;
             const yearlyLost = monthlyLost * 12;
 
-            // For the insight box
-            // Assume "saving" means catching just 50% of those missed calls (conservative estimate)
+            // "Saving" Scenario: Catching 50% of missed calls
             const savedCallCount = Math.max(1, Math.round(missedCalls * 0.5)); 
             const potentialAddedRevenue = savedCallCount * (closeRate / 100) * jobValue;
 
-            // Fun metric: New Trucks (Assuming a work truck costs ~$50k)
+            // Truck Equivalent (Assuming $50k per truck)
             const truckCost = 50000;
             const trucksLost = (yearlyLost / truckCost).toFixed(1);
 
-            // Update DOM
+            // Update UI
             monthlyLostDisplay.textContent = formatter.format(monthlyLost);
             yearlyLostDisplay.textContent = formatter.format(yearlyLost);
             truckCountDisplay.textContent = trucksLost;
@@ -251,95 +254,7 @@
             addedRevenueDisplay.textContent = formatter.format(potentialAddedRevenue);
         }
 
-        // PDF Generation Logic
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Colors
-            const orange = '#c2410c';
-            const dark = '#18181b';
-
-            // Title
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
-            doc.setTextColor(orange);
-            doc.text("5 STEPS TO RESPOND TO EVERY LEAD", 20, 25);
-            
-            // Subtitle
-            doc.setFontSize(11);
-            doc.setTextColor(dark);
-            doc.text("A quick-start checklist to stop leaking leads and win more roofs.", 20, 35);
-            doc.setLineWidth(0.5);
-            doc.line(20, 40, 190, 40);
-
-            // Checklist Items
-            let y = 55;
-            
-            const items = [
-                { 
-                    title: "1. CENTRALIZE EVERY LEAD SOURCE", 
-                    desc: "List sources: Phone, Missed Calls, Website Forms, Ads, GMB.\n'One Inbox' Rule: All leads must land in a single place (CRM) within minutes." 
-                },
-                { 
-                    title: "2. SET UP INSTANT AUTO-REPLY", 
-                    desc: "Confirm receipt immediately via SMS/Email.\nScript: 'Thanks for reaching out. We've got your request. We'll reply in a few minutes.'" 
-                },
-                { 
-                    title: "3. ALERT THE RIGHT PERSON", 
-                    desc: "Ensure owner/sales rep gets a ping (SMS/App) instantly.\n5-Minute Rule: Whoever is 'on lead duty' must call back within 5-10 minutes." 
-                },
-                { 
-                    title: "4. EASY BOOKING OPTIONS", 
-                    desc: "Add a clear CTA to auto-replies (e.g., 'Pick a time for a free inspection: [Link]').\nSync Calendar: Connect to Google Cal/Calendly with pre-set windows." 
-                },
-                { 
-                    title: "5. TRACK UNTIL 'YES' OR 'NO'", 
-                    desc: "Pipeline: New > Contacted > Inspection Set > Won/Lost.\nFollow-Up: At least 3-5 follow-ups over a week before marking as lost." 
-                }
-            ];
-
-            items.forEach(item => {
-                // Title
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
-                doc.setTextColor(orange);
-                doc.text(item.title, 20, y);
-                y += 6;
-
-                // Description (Multi-line handling)
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-                doc.setTextColor(dark);
-                // splitTextToSize ensures text wraps within 170mm width
-                const splitDesc = doc.splitTextToSize(item.desc, 170);
-                doc.text(splitDesc, 20, y);
-                
-                // Calculate next Y position based on how many lines the description took
-                y += (splitDesc.length * 5) + 8;
-            });
-
-            // Footer Section
-            y = 260; // Force footer to bottom
-            doc.setDrawColor(200);
-            doc.line(20, y, 190, y);
-            
-            y += 10;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
-            doc.setTextColor(dark);
-            doc.text("Market Glide Solutions - Sergio Lemley", 20, y);
-            
-            y += 5;
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(100);
-            doc.text("Need this system built for you? We set up missed-call text-back in under 2 weeks.", 20, y);
-
-            // Save
-            doc.save("Roofer_Lead_Checklist.pdf");
-        }
-
-        // Initial Calculation
+        // Initialize Calculator
         calculate();
 
     </script>
